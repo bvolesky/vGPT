@@ -1,0 +1,6 @@
+.idea
+*__pycache*
+vGPTWebApp/chatbot/app/assets/machine_learning/model
+vGPTWebApp/chatbot/app/assets/machine_learning/tokenizer
+assets/machine_learning/model
+assets/machine_learning/tokenizer

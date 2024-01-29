@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <title>Chatbot</title>
+    <style>
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #343541;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        #chat-container {
+            width: 40%;
+            max-width: 500px;
+            background-color: #424759;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+        #chat-header {
+            text-align: center;
+            padding: 10px;
+            font-size: 20px;
+            background-color: #4c4d65;
+            border-bottom: 1px solid #2e2f38;
+        }
+        #chat-box {
+            height: 360px; /* Adjusted height */
+            padding: 10px;
+            overflow-y: auto;
+            background-color: #2e2f38;
+            border-bottom: 1px solid #37384a;
+        }
+        #user-input {
+            width: calc(100% - 20px);
+            padding: 10px;
+            border: none;
+            outline: none;
+            background-color: #2e2f38;
+            color: #fff;
+        }
+        .message {
+            margin-bottom: 10px;
+            padding: 5px;
+            border-radius: 5px;
+            background-color: #4c4d65;
+        }
+        #chat-footer {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            color: #fff;
+            font-size: 12px;
+        }
+
+    </style>
+</head>
+<body>
+    <div id="chat-container">
+        <div id="chat-header">vGPT</div>
+        <div id="chat-box"></div>
+        <input type="text" id="user-input" placeholder="Type a message..." onkeypress="sendMessage(event)">
+    </div>
+
+    <div id="chat-footer">Designed by Brandon Volesky</div>
+
+    <script>
+        function sendMessage(event) {
+            if (event.key === "Enter") {
+                var userInput = document.getElementById("user-input").value;
+                if (userInput.trim() !== "") {
+                    addToChatBox("You: " + userInput, true);
+                    document.getElementById("user-input").value = "";
+                    fetch('/api/chatbot_response/?user_input=' + encodeURIComponent(userInput))
+                        .then(response => response.json())
+                        .then(data => addToChatBox("vGPT: " + data.response, false))
+                        .catch(error => console.error('Error:', error));
+                }
+            }
+        }
+
+        function addToChatBox(message, isUser) {
+            var chatBox = document.getElementById("chat-box");
+            var newMessage = document.createElement("div");
+            newMessage.classList.add("message");
+            if (isUser) {
+                newMessage.style.textAlign = "right";
+                newMessage.style.backgroundColor = "#5d887d";
+            }
+            newMessage.textContent = message;
+            chatBox.appendChild(newMessage);
+            chatBox.scrollTop = chatBox.scrollHeight; // Scroll to the bottom
+        }
+    </script>
+
+</body>
+</html>
