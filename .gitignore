@@ -1,6 +1,7 @@
 .idea
+venv
 *__pycache*
 vGPTWebApp/chatbot/app/assets/machine_learning/model
 vGPTWebApp/chatbot/app/assets/machine_learning/tokenizer
-assets/machine_learning/model
-assets/machine_learning/tokenizer
+assets/machine_learning/model/facebook_blenderbot-400M-distill
+assets/machine_learning/tokenizer/facebook_blenderbot-400M-distill
