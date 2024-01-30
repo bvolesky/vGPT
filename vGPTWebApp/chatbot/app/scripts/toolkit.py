@@ -1,6 +1,9 @@
 """Provides supporting functions to create and execute the llm chatbot."""
 import os
 import random
+
+import requests.exceptions
+import torch
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 
 
@@ -24,6 +27,28 @@ def get_intro():
         "Hi! Ready to have a relaxed conversation?",
     ]
     return random.choice(intros)
+
+
+def get_outro():
+    """
+    Selects a random goodbye message from a predefined list.
+
+    Returns:
+        str: A randomly chosen goodbye message.
+    """
+    goodbyes = [
+        "Goodbye! Have a great day!",
+        "Farewell! It was nice chatting with you.",
+        "Take care! Until next time.",
+        "Goodbye for now! Stay awesome!",
+        "Adios! Catch you later!",
+        "Bye bye! Enjoy your day!",
+        "See you later! It's been a pleasure.",
+        "So long! Until we meet again.",
+        "Goodbye, my friend! Take care.",
+        "Bye for now! Stay safe and happy!",
+    ]
+    return random.choice(goodbyes)
 
 
 def print_intro():
@@ -77,7 +102,7 @@ def check_end_chat(text):
     ]
 
 
-def initialize_model_and_tokenizer():
+def initialize_model_and_tokenizer(path=None):
     """
     Initialize and return the model and tokenizer from Hugging Face.
     The function checks if the model and tokenizer are saved locally. If not present
@@ -89,10 +114,13 @@ def initialize_model_and_tokenizer():
         model (AutoModelForSeq2SeqLM): The model.
         tokenizer (AutoTokenizer): The tokenizer for the model.
     """
+    if path is None:
+        path = "../../../.."
+
     model_name = "facebook/blenderbot-400M-distill"
     clean_model_name = model_name.replace("/", "_")
-    model_path = f"../assets/machine_learning/model/{clean_model_name}"
-    tokenizer_path = f"../assets/machine_learning/tokenizer/{clean_model_name}"
+    model_path = f"{path}/assets/machine_learning/model/{clean_model_name}"
+    tokenizer_path = f"{path}/assets/machine_learning/tokenizer/{clean_model_name}"
 
     # Ensure directories exist
     if not os.path.exists(model_path):
@@ -196,8 +224,15 @@ def process_input(user_text):
     )
     knowledge = ""
     dialog = []
-    model, tokenizer = initialize_model_and_tokenizer()
+    model_path = "assets/machine_learning/model/facebook_blenderbot-400M-distill"
+    tokenizer_path = (
+        "assets/machine_learning/tokenizer/facebook_blenderbot-400M-distill"
+    )
+    model = AutoModelForSeq2SeqLM.from_pretrained(model_path)
+    tokenizer = AutoTokenizer.from_pretrained(tokenizer_path)
     dialog.append(user_text)
+    if check_end_chat(user_text):
+        return get_outro()
     response = generate(model, tokenizer, instruction, knowledge, dialog)
     dialog.append(response)
     if not response.strip():
@@ -206,4 +241,4 @@ def process_input(user_text):
 
 
 if __name__ == "__main__":
-    process_input()
+    process_input("bye")

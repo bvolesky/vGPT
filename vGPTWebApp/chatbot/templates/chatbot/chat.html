@@ -3,11 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-    <title>Chatbot</title>
+    <title>vGPT</title>
+    {% load static %}
+    <link rel="icon" href="{% static 'images/favicon.ico' %}" type="image/x-icon">
+    <link rel="shortcut icon" href="{% static 'images/favicon.ico' %}" type="image/x-icon">
     <style>
         body {
-            font-family: 'Roboto', Arial, sans-serif;
+            font-family: 'Arial', sans-serif;
             margin: 0;
             padding: 0;
             background-color: #343541;
@@ -26,6 +28,7 @@
             overflow: hidden;
         }
         #chat-header {
+            font-family: "Arial Black";
             text-align: center;
             padding: 10px;
             font-size: 20px;
@@ -53,6 +56,19 @@
             border-radius: 5px;
             background-color: #4c4d65;
         }
+
+        #reload-icon {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            cursor: pointer;
+        }
+
+        #typing-gif {
+            display: none;
+            text-align: left;
+        }
+
         #chat-footer {
             position: fixed;
             bottom: 10px;
@@ -64,42 +80,88 @@
     </style>
 </head>
 <body>
+    <img id="reload-icon" src="{% static 'images/new_note.png' %}" alt="Reload" onclick="reloadPage()">
     <div id="chat-container">
         <div id="chat-header">vGPT</div>
-        <div id="chat-box"></div>
-        <input type="text" id="user-input" placeholder="Type a message..." onkeypress="sendMessage(event)">
+        <div id="chat-box">
+            <div id="typing-gif">
+                <img src="{% static 'images/helix.gif' %}" alt="Typing...">
+            </div>
+        </div>
+        <input type="text" id="user-input" placeholder="Message vGPT..." onkeypress="sendMessage(event)">
     </div>
 
     <div id="chat-footer">Designed by Brandon Volesky</div>
 
     <script>
+        var typingGifUrl = "{% static 'images/helix.gif' %}";
+
+        function reloadPage() {
+            location.reload();
+        }
         function sendMessage(event) {
             if (event.key === "Enter") {
                 var userInput = document.getElementById("user-input").value;
                 if (userInput.trim() !== "") {
-                    addToChatBox("You: " + userInput, true);
+                    addToChatBox(userInput, true);
                     document.getElementById("user-input").value = "";
+                    showTypingGif(true);
                     fetch('/api/chatbot_response/?user_input=' + encodeURIComponent(userInput))
                         .then(response => response.json())
-                        .then(data => addToChatBox("vGPT: " + data.response, false))
-                        .catch(error => console.error('Error:', error));
+                        .then(data => {
+                            showTypingGif(false);
+                            addToChatBox(data.response, false);
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            showTypingGif(false);
+                        });
                 }
             }
         }
 
+        function showTypingGif(show) {
+            var chatBox = document.getElementById("chat-box");
+            var typingGifDiv = document.getElementById("typing-gif");
+            if (show) {
+                if (!typingGifDiv) {
+                    typingGifDiv = document.createElement("div");
+                    typingGifDiv.id = "typing-gif";
+                    typingGifDiv.innerHTML = '<img src="' + typingGifUrl + '" alt="Typing...">';
+                    chatBox.appendChild(typingGifDiv);
+                }
+                typingGifDiv.style.display = "block";
+                typingGifDiv.style.transform = "translateX(10px)";
+            } else {
+                if (typingGifDiv) {
+                    typingGifDiv.style.display = "none";
+                }
+            }
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
         function addToChatBox(message, isUser) {
             var chatBox = document.getElementById("chat-box");
+            var typingGifDiv = document.getElementById("typing-gif");
             var newMessage = document.createElement("div");
             newMessage.classList.add("message");
+
+            // Create a text node for the message and append it
+            var messageText = document.createTextNode(message);
+            newMessage.appendChild(messageText);
+
             if (isUser) {
                 newMessage.style.textAlign = "right";
                 newMessage.style.backgroundColor = "#5d887d";
             }
-            newMessage.textContent = message;
-            chatBox.appendChild(newMessage);
+
+            if (typingGifDiv) {
+                chatBox.replaceChild(newMessage, typingGifDiv);
+            } else {
+                chatBox.appendChild(newMessage);
+            }
             chatBox.scrollTop = chatBox.scrollHeight; // Scroll to the bottom
         }
     </script>
-
 </body>
 </html>
